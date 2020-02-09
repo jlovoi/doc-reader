@@ -1,14 +1,18 @@
+import os
+import json
+
 from lxml import etree
 import zipfile
 
+fileName = 'joe_edit.docx'
+
 ooXMLns = {'w': 'http://schemas.openxmlformats.org/wordprocessingml/2006/main'}
-docxZip = zipfile.ZipFile('joe_edit.docx')
+docxZip = zipfile.ZipFile(fileName)
 commentsXML = docxZip.read('word/comments.xml')
 et = etree.XML(commentsXML)
 
 extraction = {'comments': [], 'inserts': []}
 
-# print("COMMENTS")
 comments = et.xpath('//w:comment', namespaces=ooXMLns)
 for c in comments:
     authors = c.xpath('@w:author', namespaces=ooXMLns)
@@ -23,7 +27,6 @@ for c in comments:
 insertsXML = docxZip.read('word/document.xml')
 te = etree.XML(insertsXML)
 
-# print("\n\nINSERTS\n\n")
 inserts = te.xpath('//w:p', namespaces=ooXMLns)
 x = 0
 for i in inserts:
@@ -32,7 +35,7 @@ for i in inserts:
         extraction['inserts'].append({
             'line': line
         })
-        ins = i.xpath('w:ins', namespaces=ooXMLns)
+        ins = i.xpath('w:r|w:ins', namespaces=ooXMLns)
         inserted = []
         for ting in ins:
             author = ting.xpath('@w:author', namespaces=ooXMLns)
@@ -47,3 +50,11 @@ for i in inserts:
         x += 1
 
 print(extraction)
+
+jsonObj = json.dumps(extraction)
+
+writeTo = fileName.split('.')[0] + '.json'
+
+f = open(writeTo, 'w')
+f.write(jsonObj)
+f.close()
