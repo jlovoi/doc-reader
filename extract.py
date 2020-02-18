@@ -11,7 +11,7 @@ docxZip = zipfile.ZipFile(fileName)
 commentsXML = docxZip.read('word/comments.xml')
 et = etree.XML(commentsXML)
 
-extraction = {'comments': [], 'inserts': []}
+extraction = {'comments': [], 'inserts': [], 'lines': []}
 
 comments = et.xpath('//w:comment', namespaces=ooXMLns)
 for c in comments:
@@ -30,6 +30,9 @@ te = etree.XML(insertsXML)
 inserts = te.xpath('//w:p', namespaces=ooXMLns)
 x = 0
 for i in inserts:
+    l = i.xpath('string(.)', namespaces=ooXMLns)
+    if (l != ''):
+        extraction['lines'].append(l)
     if (i.xpath('w:ins', namespaces=ooXMLns)):
         line = i.xpath('string(.)', namespaces=ooXMLns)
         extraction['inserts'].append({
